@@ -52,7 +52,7 @@ jobs:
           delete_run_by_conclusion_pattern: "ALL"
 
   mark:
-    name: "mark build time"
+    name: "Mark build time"
     runs-on: ubuntu-latest
     needs:
       - pull
