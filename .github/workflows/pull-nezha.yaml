@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 */2 * * *"
   workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
 
 jobs:
   pull:
@@ -36,9 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - pull
-    permissions:
-      actions: write
-      contents: read
 
     steps:
       - name: "Delete old workflows"
@@ -56,9 +56,6 @@ jobs:
     needs:
       - pull
       - delete
-    permissions:
-      actions: write
-      contents: read
 
     steps:
       - name: "Checkout repository"
