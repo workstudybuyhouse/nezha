@@ -1,0 +1,76 @@
+---
+name: "Pull nezha image"
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+jobs:
+  pull:
+    name: "Pull nezha image"
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+
+    steps:
+      - name: "Login to DockerHub"
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: "Pulling images in loop"
+        run: |
+          LATEST_VER="$(wget -qO- --tries=50 "https://hub.docker.com/v2/repositories/$DOCKER_REPO/tags" 2>/dev/null | grep -o '"name":"[^"]*"' | awk -F'"' '$4!="latest"{print $4}' | sort -Vr | head -n1)"
+          for ((i=1; i<=50; i++)); do
+            docker pull "$DOCKER_REPO":"$LATEST_VER"
+            docker rmi -f "$DOCKER_REPO":"$LATEST_VER"
+          done
+          docker system prune -af --volumes
+
+  delete:
+    name: "Delete old workflows"
+    runs-on: ubuntu-latest
+    needs:
+      - pull
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - name: "Delete old workflows"
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 0
+          delete_run_by_conclusion_pattern: "ALL"
+
+  mark:
+    name: "mark build time"
+    runs-on: ubuntu-latest
+    needs:
+      - pull
+      - delete
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: "Bump execution time"
+        run: |
+          END_TIME="$(date -u '+%Y-%m-%d %H:%M:%S' -d '+8 hours')"
+          sed -i "s/\(build time:\).*/\1 $END_TIME/" ./README.md
+          echo "END_TIME=${END_TIME}" >> "$GITHUB_ENV"
+          echo "task complete in $END_TIME"
+
+      - name: "Upload commit to repository"
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "build time $END_TIME by github actions"
