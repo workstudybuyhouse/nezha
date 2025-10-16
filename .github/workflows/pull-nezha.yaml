@@ -29,7 +29,7 @@ jobs:
       - name: "Pulling images in loop"
         run: |
           LATEST_VER="$(wget -qO- --tries=50 "https://hub.docker.com/v2/repositories/$DOCKER_REPO/tags" 2>/dev/null | grep -o '"name":"[^"]*"' | awk -F'"' '$4!="latest"{print $4}' | sort -Vr | head -n1)"
-          for ((i=1; i<=50; i++)); do
+          for ((i=1; i<=2; i++)); do
             docker pull "$DOCKER_REPO":"$LATEST_VER"
             docker rmi -f "$DOCKER_REPO":"$LATEST_VER"
           done
@@ -75,3 +75,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: "build time ${{ env.END_TIME }} by github actions"
+          commit_options: '--no-verify --signoff'
