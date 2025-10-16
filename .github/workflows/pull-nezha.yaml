@@ -74,5 +74,5 @@ jobs:
       - name: "Upload commit to repository"
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          commit_message: "build time ${{ env.END_TIME }} by github actions"
-          commit_options: '--no-verify --signoff'
+          commit_message: "docs: build time ${{ env.END_TIME }} by github actions"
+          commit_options: "--no-verify --signoff"
