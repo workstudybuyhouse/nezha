@@ -74,5 +74,10 @@ jobs:
       - name: "Upload commit to repository"
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "docs: pull time ${{ env.END_TIME }} by github actions"
-          commit_options: "--no-verify --signoff"
+          commit_message: |
+            docs: pull time ${{ env.END_TIME }} by github actions
+            Co-authored-by: dependabot[bot] <support@github.com>
+          commit_options: "--signoff --no-verify"
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
