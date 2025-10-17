@@ -55,7 +55,6 @@ jobs:
     name: "Mark pull time"
     runs-on: ubuntu-latest
     needs:
-      - pull
       - delete
 
     steps:
